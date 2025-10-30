@@ -1,0 +1,20 @@
+{
+  "categories": [
+    {
+      "name": "Cakes",
+      "pattern": "*_Cakes.svg"
+    },
+    {
+      "name": "Characters",
+      "pattern": "*_Characters.svg"
+    },
+    {
+      "name": "Frames",
+      "pattern": "*_Frames.svg"
+    },
+    {
+      "name": "Other Elements",
+      "pattern": "*_Other Elements.svg"
+    }
+  ]
+} 
