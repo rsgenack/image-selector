@@ -93,16 +93,12 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
     }, 10);
   };
 
-  // Log the image count on initial load
+  // Log initial counts
   useEffect(() => {
-    if (images.length > 0) {
-      log(`Found ${images.length} images of ${totalImages} expected`);
-
-      if (images.length < totalImages) {
-        log(`Warning: Only loaded ${images.length} of the expected ${totalImages} images`);
-      }
+    if (uploadedFiles.length > 0) {
+      log(`Found ${uploadedFiles.length} uploaded images`);
     }
-  }, [images.length, totalImages]);
+  }, [uploadedFiles.length]);
 
   // Load current image
   useEffect(() => {
@@ -380,8 +376,8 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
     return <div className="text-lg text-muted-foreground p-8 text-center">Loading images... Please wait.</div>;
   }
 
-  if (images.length === 0) {
-    return <div className="text-red-500 text-center p-4">No images found. Please check the Images directory.</div>;
+  if (!loading && processedImages.length === 0) {
+    return <div className="text-center p-6 text-muted-foreground">No images uploaded. Go back to Home to add files.</div>;
   }
 
   return (
@@ -428,7 +424,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
                 <span className="inline-block px-2 py-0.5 bg-muted rounded shadow text-xs ml-1">⌫</span> (Backspace) to Undo
               </p>
               <div className="mb-2 text-xs text-muted-foreground">Image {currentIndex + 1} of {totalImages} ({Math.round((currentIndex / totalImages) * 100)}% complete)</div>
-              <div className="mb-3 text-xs text-muted-foreground bg-muted/60 px-2 py-1 rounded">Loaded: {images.length} of {totalExpected} images</div>
+              <div className="mb-3 text-xs text-muted-foreground bg-muted/60 px-2 py-1 rounded">Loaded: {processedImages.length} of {totalExpected} images</div>
               <div className="relative w-[90%] max-w-[900px] h-[70vh] flex items-center justify-center mx-auto mb-4 bg-white dark:bg-card rounded-lg shadow overflow-hidden">
                 {isLoading ? (
                   <div className="text-base text-muted-foreground">Loading image...</div>
@@ -458,8 +454,8 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
           ) : (
             <div className="text-center p-8 bg-white dark:bg-card rounded-lg shadow">
               <h1 className="text-2xl font-semibold mb-2">All Done!</h1>
-              <p className="text-sm text-muted-foreground">You liked {likedImages.length} images and disliked {dislikedImages.length} out of {images.length}.</p>
-              <p className="text-xs text-muted-foreground italic mb-4">{images.length < totalExpected ? `Note: Only ${images.length} of the expected ${totalExpected} images were loaded.` : `All ${totalExpected} expected images were loaded.`}</p>
+              <p className="text-sm text-muted-foreground">You liked {likedImages.length} images and disliked {dislikedImages.length} out of {processedImages.length}.</p>
+              <p className="text-xs text-muted-foreground italic mb-4">{processedImages.length < totalExpected ? `Note: Only ${processedImages.length} of the expected ${totalExpected} images were loaded.` : `All ${totalExpected} expected images were loaded.`}</p>
               <button onClick={handleDownload} className="inline-flex items-center justify-center rounded-md bg-blue-600 text-white px-4 py-2 text-sm font-medium shadow hover:brightness-110">
                 Download Results
               </button>

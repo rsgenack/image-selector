@@ -2,11 +2,10 @@ import { useState, useRef, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface HomeScreenProps {
-  defaultImages: string[];
   onUpload: (files: File[]) => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ defaultImages, onUpload }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ onUpload }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,10 +46,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ defaultImages, onUpload }) => {
     navigate('/sort');
   };
 
-  const handleUseDefault = () => {
-    onUpload([]);
-    navigate('/sort');
-  };
+  // No default images flow; users must upload files
 
   return (
     <div className="max-w-3xl mx-auto p-8 text-center">
@@ -111,12 +107,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ defaultImages, onUpload }) => {
             disabled={selectedFiles.length === 0}
           >
             Start Sorting Custom Images
-          </button>
-          <button
-            className="inline-flex items-center justify-center rounded-full bg-selective_yellow text-black px-5 py-2 font-semibold text-sm shadow hover:brightness-110"
-            onClick={handleUseDefault}
-          >
-            Use Default Images ({defaultImages.length})
           </button>
         </div>
       </div>
