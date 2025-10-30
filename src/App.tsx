@@ -10,26 +10,22 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load images from the public/renamed_images directory
+    // Fetch the generated manifest of image files (any image type)
     setLoading(true);
-    console.log("Loading images from public/renamed_images directory...");
-    
-    try {
-      const imageFiles: string[] = [];
-      
-      // Generate paths for all SVG files in the renamed_images directory
-      // Use a pattern that matches all SVG files in renamed_images (image761.svg through image860.svg)
-      for (let i = 1; i <= 860; i++) {
-        imageFiles.push(`/renamed_images/image${i}.svg`);
-      }
-      
-      console.log(`Loaded ${imageFiles.length} image paths`);
-      setImages(imageFiles);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error generating image paths:", error);
-      setLoading(false);
-    }
+    fetch('/renamed_images/manifest.json')
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`Manifest fetch failed: ${res.status}`);
+        const data = await res.json();
+        const files: string[] = Array.isArray(data.files) ? data.files : [];
+        const paths = files.map((name) => `/renamed_images/${name}`);
+        console.log(`Loaded ${paths.length} images from manifest`);
+        setImages(paths);
+      })
+      .catch((err) => {
+        console.error('Error loading manifest:', err);
+        setImages([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
   
   const handleUpload = (files: File[]) => {
@@ -51,7 +47,7 @@ function App() {
             images={images} 
             uploadedFiles={uploadedFiles}
             loading={loading}
-            totalExpected={860} // We have 100 files from image761.svg to image860.svg
+            totalExpected={images.length}
           />
         } />
         <Route path="*" element={<Navigate to="/" replace />} />
