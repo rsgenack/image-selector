@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/ImageSorter.css';
 
 interface ImageSorterProps {
   images: string[];
@@ -9,8 +8,8 @@ interface ImageSorterProps {
   totalExpected?: number;
 }
 
-const ImageSorter: React.FC<ImageSorterProps> = ({ 
-  images, 
+const ImageSorter: React.FC<ImageSorterProps> = ({
+  images,
   uploadedFiles = [],
   loading = false,
   totalExpected = 0
@@ -28,7 +27,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   const [processedImages, setProcessedImages] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
   const navigate = useNavigate();
-  
+
   // Reference to logs div for autoscrolling
   const logsRef = useRef<HTMLDivElement | null>(null);
   const likedImagesRef = useRef<HTMLDivElement | null>(null);
@@ -40,19 +39,19 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   useEffect(() => {
     if (uploadedFiles.length > 0) {
       log(`Processing ${uploadedFiles.length} uploaded files`);
-      
+
       const tempImages: string[] = [...images];
       const objectUrls: string[] = [];
-      
+
       uploadedFiles.forEach(file => {
         const objectUrl = URL.createObjectURL(file);
         tempImages.push(objectUrl);
         objectUrls.push(objectUrl);
         log(`Added uploaded file: ${file.name}`);
       });
-      
+
       setProcessedImages(tempImages);
-      
+
       // Cleanup function for object URLs
       return () => {
         objectUrls.forEach(url => {
@@ -71,22 +70,22 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
     const logMessage = `${timestamp}: ${message}`;
     console.log(logMessage);
     setLogs(prev => [...prev, logMessage]);
-    
+
     // Auto-scroll logs only if already at the bottom
     setTimeout(() => {
       if (logsRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = logsRef.current;
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-        
+
         if (isAtBottom) {
           logsRef.current.scrollTop = logsRef.current.scrollHeight;
         }
       }
-      
+
       if (likedImagesRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = likedImagesRef.current;
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-        
+
         if (isAtBottom) {
           likedImagesRef.current.scrollTop = likedImagesRef.current.scrollHeight;
         }
@@ -98,7 +97,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   useEffect(() => {
     if (images.length > 0) {
       log(`Found ${images.length} images of ${totalImages} expected`);
-      
+
       if (images.length < totalImages) {
         log(`Warning: Only loaded ${images.length} of the expected ${totalImages} images`);
       }
@@ -108,24 +107,24 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   // Load current image
   useEffect(() => {
     if (processedImages.length === 0 || currentIndex >= processedImages.length) return;
-    
+
     // Fetch SVG content
     setIsLoading(true);
     setError(null);
     const imagePath = processedImages[currentIndex];
-    
+
     log(`Loading image: ${imagePath}`);
 
     // Strip the URL parameter for display purposes
     const displayPath = imagePath.replace('?url', '');
-    
+
     // Create an img element to display the SVG
     const img = document.createElement('img');
     img.src = imagePath;
     img.alt = "SVG Image";
     img.style.maxWidth = "100%";
     img.style.maxHeight = "100%";
-    
+
     img.onload = () => {
       // Create a wrapper for the img tag
       const svgWrapper = `<div class="svg-wrapper"><img src="${imagePath}" alt="SVG Image" /></div>`;
@@ -133,7 +132,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
       setIsLoading(false);
       log(`Successfully loaded image ${currentIndex + 1}/${processedImages.length}`);
     };
-    
+
     img.onerror = () => {
       const errorMsg = `Error loading SVG at path: ${displayPath}`;
       log(errorMsg);
@@ -146,7 +145,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (completed) return;
-      
+
       if (e.key === 'ArrowLeft') {
         // No - dislike
         handleDislike();
@@ -178,11 +177,11 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   // Handle user liking an image
   const handleLike = () => {
     if (completed) return;
-    
+
     const imagePath = processedImages[currentIndex];
     // Extract just the filename from the path, removing URL parameters
     const filename = imagePath.split('/').pop()?.replace('?url', '') || '';
-    
+
     // Store just the filename for simplicity
     log(`LIKED: ${filename}`);
     setLikedImages(prev => [...prev, filename]);
@@ -193,11 +192,11 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   // Handle user disliking an image
   const handleDislike = () => {
     if (completed) return;
-    
+
     const imagePath = processedImages[currentIndex];
     // Extract just the filename from the path, removing URL parameters
     const filename = imagePath.split('/').pop()?.replace('?url', '') || '';
-    
+
     // Store just the filename for simplicity
     log(`DISLIKED: ${filename}`);
     setDislikedImages(prev => [...prev, filename]);
@@ -207,14 +206,14 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   // Undo the last action
   const handleUndoLastAction = () => {
     if (currentIndex === 0 || completed) return;
-    
+
     // Go back to the previous image
     setCurrentIndex(currentIndex - 1);
-    
+
     // Check if the previous image was liked or disliked
     const prevImage = processedImages[currentIndex - 1];
     const prevFilename = prevImage.split('/').pop()?.replace('?url', '') || '';
-    
+
     // Remove the previous image from either liked or disliked
     if (likedImages.includes(prevFilename)) {
       log(`UNDO LIKE: ${prevFilename}`);
@@ -275,14 +274,14 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
       const logsContent = logs.join('\n');
       const blob = new Blob([logsContent], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
-      
+
       const link = document.createElement('a');
       link.href = url;
       link.download = `image-logs-${new Date().toISOString().split('T')[0]}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       log('Logs downloaded');
     } catch (error) {
       log(`Error downloading logs: ${error}`);
@@ -295,14 +294,14 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
       const likedContent = likedImages.join('\n');
       const blob = new Blob([likedContent], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
-      
+
       const link = document.createElement('a');
       link.href = url;
       link.download = `liked-images-${new Date().toISOString().split('T')[0]}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       log('Liked images downloaded');
     } catch (error) {
       log(`Error downloading liked images: ${error}`);
@@ -321,46 +320,46 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
         totalLiked: likedImages.length,
         totalDisliked: dislikedImages.length
       };
-      
+
       const jsonContent = JSON.stringify(results, null, 2); // pretty print
       const blob = new Blob([jsonContent], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      
+
       const link = document.createElement('a');
       link.href = url;
       link.download = `image-results-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       log('Results saved to JSON file');
-      
+
       // Also save logs
       const logsContent = logs.join('\n');
       const logsBlob = new Blob([logsContent], { type: 'text/plain' });
       const logsUrl = URL.createObjectURL(logsBlob);
-      
+
       const logsLink = document.createElement('a');
       logsLink.href = logsUrl;
       logsLink.download = `image-logs-${new Date().toISOString().split('T')[0]}.txt`;
       document.body.appendChild(logsLink);
       logsLink.click();
       document.body.removeChild(logsLink);
-      
+
       log('Logs saved to text file');
-      
+
       // Create a separate "liked-images.txt" file
       const likedImagesContent = likedImages.join('\n');
       const likedImagesBlob = new Blob([likedImagesContent], { type: 'text/plain' });
       const likedImagesUrl = URL.createObjectURL(likedImagesBlob);
-      
+
       const likedImagesLink = document.createElement('a');
       likedImagesLink.href = likedImagesUrl;
       likedImagesLink.download = `liked-images-${new Date().toISOString().split('T')[0]}.txt`;
       document.body.appendChild(likedImagesLink);
       likedImagesLink.click();
       document.body.removeChild(likedImagesLink);
-      
+
       log('Liked images saved to text file');
     } catch (error) {
       log(`Error saving results: ${error}`);
@@ -378,136 +377,118 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   };
 
   if (loading) {
-    return <div className="loading">Loading images... Please wait.</div>;
+    return <div className="text-lg text-muted-foreground p-8 text-center">Loading images... Please wait.</div>;
   }
 
   if (images.length === 0) {
-    return <div className="error-message">No images found. Please check the Images directory.</div>;
+    return <div className="text-red-500 text-center p-4">No images found. Please check the Images directory.</div>;
   }
 
   return (
-    <div className="image-sorter-container">
-      {/* Header */}
-      <div className="header">
-        <h1>Image Sorter</h1>
-        <button className="back-button" onClick={handleBackToHome}>Back to Home</button>
+    <div className="flex flex-col h-screen">
+      <div className="flex items-center justify-between px-6 py-4 bg-muted border-b border-border">
+        <h1 className="m-0 text-lg font-semibold text-foreground">Image Sorter</h1>
+        <button className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium shadow hover:opacity-90" onClick={handleBackToHome}>Back to Home</button>
       </div>
-      
-      <div className="image-sorter">
-        <div className="liked-images-sidebar">
-          <h3>Liked Images ({likedImages.length})</h3>
-          <div className="liked-images-grid" ref={likedImagesRef}>
+
+      <div className="flex flex-1 overflow-hidden bg-background text-foreground">
+        <div className="w-80 max-w-xs bg-white dark:bg-card p-4 border-r border-border flex flex-col h-full overflow-hidden">
+          <h3 className="m-0 mb-2 text-base font-medium sticky top-0 bg-white dark:bg-card py-2">Liked Images ({likedImages.length})</h3>
+          <div className="flex-1 overflow-y-auto border border-border bg-muted/40 p-2 rounded" ref={likedImagesRef}>
             {likedImages.length === 0 ? (
-              <div className="no-images">No images liked yet</div>
+              <div className="text-muted-foreground italic py-4 text-center">No images liked yet</div>
             ) : (
-              <>
-                <div className="images-grid">
-                  {likedImagePaths.map((path, index) => (
-                    <div key={index} className="liked-image-tile">
-                      <img src={path} alt={`Liked image ${index + 1}`} />
-                      <span className="liked-image-name">{likedImages[index]}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
+              <div className="grid grid-cols-2 gap-2 p-1">
+                {likedImagePaths.map((path, index) => (
+                  <div key={index} className="border border-border rounded p-1 bg-white dark:bg-card flex flex-col items-center overflow-hidden hover:shadow transition-transform">
+                    <img src={path} alt={`Liked image ${index + 1}`} className="max-w-full h-20 object-contain mb-1" />
+                    <span className="text-[11px] text-muted-foreground w-full truncate text-center">{likedImages[index]}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-          <div className="logs-buttons">
-            <button onClick={copyLikedImages} className="copy-btn-small">
+          <div className="mt-2 flex gap-2">
+            <button onClick={copyLikedImages} className="inline-flex items-center rounded-md bg-neutral-600 text-white px-3 py-1 text-xs font-medium shadow hover:brightness-110">
               Copy List
             </button>
-            <button onClick={downloadLikedImages} className="download-btn-small">
+            <button onClick={downloadLikedImages} className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1 text-xs font-medium shadow hover:brightness-110">
               Download List
             </button>
           </div>
         </div>
-        
-        <div className="main-content">
+
+        <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto">
           {!completed ? (
             <>
-              <h1>Image Sorter</h1>
-              <p className="instructions">
-                Use <span className="key">←</span> (Left Arrow) for NO, <span className="key">→</span> (Right Arrow) for YES, <span className="key">⌫</span> (Backspace) to Undo
+              <h1 className="text-2xl font-semibold mb-2">Image Sorter</h1>
+              <p className="mb-4 text-sm text-muted-foreground text-center">
+                Use <span className="inline-block px-2 py-0.5 bg-muted rounded shadow text-xs">←</span> (Left Arrow) for NO,
+                <span className="inline-block px-2 py-0.5 bg-muted rounded shadow text-xs ml-1">→</span> (Right Arrow) for YES,
+                <span className="inline-block px-2 py-0.5 bg-muted rounded shadow text-xs ml-1">⌫</span> (Backspace) to Undo
               </p>
-              <div className="progress">
-                Image {currentIndex + 1} of {totalImages} ({Math.round((currentIndex / totalImages) * 100)}% complete)
-              </div>
-              <div className="total-stats">
-                Loaded: {images.length} of {totalExpected} images
-              </div>
-              <div className="image-container">
+              <div className="mb-2 text-xs text-muted-foreground">Image {currentIndex + 1} of {totalImages} ({Math.round((currentIndex / totalImages) * 100)}% complete)</div>
+              <div className="mb-3 text-xs text-muted-foreground bg-muted/60 px-2 py-1 rounded">Loaded: {images.length} of {totalExpected} images</div>
+              <div className="relative w-[90%] max-w-[900px] h-[70vh] flex items-center justify-center mx-auto mb-4 bg-white dark:bg-card rounded-lg shadow overflow-hidden">
                 {isLoading ? (
-                  <div className="loading-indicator">Loading image...</div>
+                  <div className="text-base text-muted-foreground">Loading image...</div>
                 ) : error ? (
-                  <div className="error-message">{error}</div>
+                  <div className="text-red-500 text-base text-center p-4">{error}</div>
                 ) : svgContent ? (
-                  <div 
-                    className="svg-container" 
-                    dangerouslySetInnerHTML={{ __html: svgContent }} 
-                  />
+                  <div className="w-full h-full flex items-center justify-center p-5" dangerouslySetInnerHTML={{ __html: svgContent }} />
                 ) : (
-                  <div className="error-message">
-                    Error loading image. Try refreshing the page.
-                  </div>
+                  <div className="text-red-500 text-base text-center p-4">Error loading image. Try refreshing the page.</div>
                 )}
               </div>
-              <div className="filename">
+              <div className="font-mono text-sm text-muted-foreground mb-4 px-3 py-1 bg-muted rounded max-w-[90%] break-words text-center">
                 {!isLoading && processedImages[currentIndex].split('/').pop()?.replace('?url', '')}
               </div>
-              <div className="buttons">
-                <button onClick={handleDislike} className="dislike-btn">
+              <div className="flex gap-4 mt-2 flex-col md:flex-row">
+                <button onClick={handleDislike} className="inline-flex items-center justify-center rounded-full bg-red-500 text-white px-6 py-2 text-base font-semibold shadow hover:brightness-110">
                   NO ←
                 </button>
-                <button onClick={handleUndoLastAction} className="undo-btn" disabled={currentIndex === 0}>
+                <button onClick={handleUndoLastAction} className="inline-flex items-center justify-center rounded-full bg-yellow-400 text-black px-6 py-2 text-base font-semibold shadow hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed" disabled={currentIndex === 0}>
                   ↩ UNDO
                 </button>
-                <button onClick={handleLike} className="like-btn">
+                <button onClick={handleLike} className="inline-flex items-center justify-center rounded-full bg-green-600 text-white px-6 py-2 text-base font-semibold shadow hover:brightness-110">
                   YES →
                 </button>
               </div>
             </>
           ) : (
-            <div className="completion">
-              <h1>All Done!</h1>
-              <p>You liked {likedImages.length} images and disliked {dislikedImages.length} out of {images.length}.</p>
-              <p className="completion-note">
-                {images.length < totalExpected ? 
-                  `Note: Only ${images.length} of the expected ${totalExpected} images were loaded.` : 
-                  `All ${totalExpected} expected images were loaded.`}
-              </p>
-              <button onClick={handleDownload} className="download-btn">
+            <div className="text-center p-8 bg-white dark:bg-card rounded-lg shadow">
+              <h1 className="text-2xl font-semibold mb-2">All Done!</h1>
+              <p className="text-sm text-muted-foreground">You liked {likedImages.length} images and disliked {dislikedImages.length} out of {images.length}.</p>
+              <p className="text-xs text-muted-foreground italic mb-4">{images.length < totalExpected ? `Note: Only ${images.length} of the expected ${totalExpected} images were loaded.` : `All ${totalExpected} expected images were loaded.`}</p>
+              <button onClick={handleDownload} className="inline-flex items-center justify-center rounded-md bg-blue-600 text-white px-4 py-2 text-sm font-medium shadow hover:brightness-110">
                 Download Results
               </button>
             </div>
           )}
         </div>
-        
-        <div className="logs-buttons-container">
-          <button className="toggle-logs-btn" onClick={toggleLogs}>
-            {showLogs ? "Hide Logs" : "Show Logs"}
+
+        <div className="fixed bottom-5 right-5 flex flex-col gap-2 z-[101]">
+          <button className="inline-flex items-center justify-center rounded-full bg-neutral-800 text-white w-40 px-4 py-2 text-sm font-semibold shadow hover:-translate-y-0.5 transition-transform" onClick={toggleLogs}>
+            {showLogs ? 'Hide Logs' : 'Show Logs'}
           </button>
-          <button onClick={downloadLogs} className="download-logs-btn">
+          <button onClick={downloadLogs} className="inline-flex items-center justify-center rounded-full bg-neutral-800 text-white w-40 px-4 py-2 text-sm font-semibold shadow hover:-translate-y-0.5 transition-transform">
             Download Logs
           </button>
-          {copySuccess && <div className="copy-success">{copySuccess}</div>}
+          {copySuccess && <div className="bg-green-600 text-white text-center px-2 py-1 rounded text-xs animate-[fadeOut_2s_forwards]">{copySuccess}</div>}
         </div>
-        
+
         {showLogs && (
-          <div className="logs-container">
-            <div className="logs-header">
-              <h3>Activity Log</h3>
-              <div className="logs-buttons">
-                <button onClick={copyLogs} className="copy-btn-small">
-                  Copy
-                </button>
-                <button onClick={() => setShowLogs(false)} className="close-btn-small">
-                  Close
-                </button>
+          <div className="fixed right-0 top-[50px] bottom-0 z-[100] w-[350px] bg-white dark:bg-card p-4 border-l border-border flex flex-col shadow-xl">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="m-0 text-base font-medium">Activity Log</h3>
+              <div className="flex gap-2">
+                <button onClick={copyLogs} className="inline-flex items-center rounded-md bg-neutral-600 text-white px-3 py-1 text-xs font-medium shadow hover:brightness-110">Copy</button>
+                <button onClick={() => setShowLogs(false)} className="inline-flex items-center rounded-md bg-red-600 text-white px-3 py-1 text-xs font-medium shadow hover:brightness-110">Close</button>
               </div>
             </div>
-            <div className="logs" ref={logsRef}>
+            <div className="flex-1 overflow-y-auto border border-border bg-muted/40 p-2 rounded" ref={logsRef}>
               {logs.map((log, index) => (
-                <div key={index} className="log-entry">{log}</div>
+                <div key={index} className="mb-2 pb-2 border-b border-dashed border-border leading-tight break-words text-xs font-mono">{log}</div>
               ))}
             </div>
           </div>
@@ -517,4 +498,4 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   );
 };
 
-export default ImageSorter; 
+export default ImageSorter;
