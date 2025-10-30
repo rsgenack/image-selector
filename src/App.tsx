@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ImageSorter from './components/ImageSorter';
 import HomeScreen from './components/HomeScreen';
