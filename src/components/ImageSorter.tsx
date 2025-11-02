@@ -26,6 +26,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [processedImages, setProcessedImages] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const preloadedUrlsRef = useRef<Set<string>>(new Set());
   const navigate = useNavigate();
 
   // Reference to logs div for autoscrolling
@@ -109,6 +110,31 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
     const imagePath = processedImages[currentIndex];
     log(`Loading image: ${imagePath}`);
     setCurrentImageUrl(imagePath);
+    // If already preloaded, skip spinner quickly
+    if (preloadedUrlsRef.current.has(imagePath)) {
+      setIsLoading(false);
+    }
+  }, [currentIndex, processedImages]);
+
+  // Preload the next few images to make navigation instant
+  useEffect(() => {
+    if (processedImages.length === 0) return;
+    const aheadCount = 3;
+    for (let i = 1; i <= aheadCount; i++) {
+      const url = processedImages[currentIndex + i];
+      if (!url || preloadedUrlsRef.current.has(url)) continue;
+      try {
+        const img = new Image();
+        img.src = url;
+        // Attempt to decode in background; ignore failures
+        if (typeof (img as any).decode === 'function') {
+          (img as any).decode().catch(() => {});
+        }
+        preloadedUrlsRef.current.add(url);
+      } catch (_) {
+        // no-op
+      }
+    }
   }, [currentIndex, processedImages]);
 
   // Set up keyboard listeners
