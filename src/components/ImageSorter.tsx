@@ -19,7 +19,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   const [likedImagePaths, setLikedImagePaths] = useState<string[]>([]);
   const [dislikedImages, setDislikedImages] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
-  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -100,41 +100,15 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
     }
   }, [uploadedFiles.length]);
 
-  // Load current image
+  // Load current image URL (any format) and let <img> handle sizing
   useEffect(() => {
     if (processedImages.length === 0 || currentIndex >= processedImages.length) return;
 
-    // Fetch SVG content
     setIsLoading(true);
     setError(null);
     const imagePath = processedImages[currentIndex];
-
     log(`Loading image: ${imagePath}`);
-
-    // Strip the URL parameter for display purposes
-    const displayPath = imagePath.replace('?url', '');
-
-    // Create an img element to display the SVG
-    const img = document.createElement('img');
-    img.src = imagePath;
-    img.alt = "SVG Image";
-    img.style.maxWidth = "100%";
-    img.style.maxHeight = "100%";
-
-    img.onload = () => {
-      // Create a wrapper for the img tag
-      const svgWrapper = `<div class="svg-wrapper"><img src="${imagePath}" alt="SVG Image" /></div>`;
-      setSvgContent(svgWrapper);
-      setIsLoading(false);
-      log(`Successfully loaded image ${currentIndex + 1}/${processedImages.length}`);
-    };
-
-    img.onerror = () => {
-      const errorMsg = `Error loading SVG at path: ${displayPath}`;
-      log(errorMsg);
-      setError(errorMsg);
-      setIsLoading(false);
-    };
+    setCurrentImageUrl(imagePath);
   }, [currentIndex, processedImages]);
 
   // Set up keyboard listeners
@@ -425,13 +399,28 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
               </p>
               <div className="mb-2 text-xs text-muted-foreground">Image {currentIndex + 1} of {totalImages} ({Math.round((currentIndex / totalImages) * 100)}% complete)</div>
               <div className="mb-3 text-xs text-muted-foreground bg-muted/60 px-2 py-1 rounded">Loaded: {processedImages.length} of {totalExpected} images</div>
-              <div className="relative w-[90%] max-w-[900px] h-[70vh] flex items-center justify-center mx-auto mb-4 bg-white dark:bg-card rounded-lg shadow overflow-hidden">
+              <div className="relative w-full max-w-[1200px] h-[80vh] flex items-center justify-center mx-auto mb-4 bg-white dark:bg-card rounded-lg shadow overflow-hidden">
                 {isLoading ? (
                   <div className="text-base text-muted-foreground">Loading image...</div>
                 ) : error ? (
                   <div className="text-red-500 text-base text-center p-4">{error}</div>
-                ) : svgContent ? (
-                  <div className="w-full h-full flex items-center justify-center p-5" dangerouslySetInnerHTML={{ __html: svgContent }} />
+                ) : currentImageUrl ? (
+                  <img
+                    src={currentImageUrl}
+                    alt="Preview"
+                    className="max-w-full max-h-full w-auto h-auto object-contain"
+                    onLoad={() => {
+                      setIsLoading(false);
+                      log(`Successfully loaded image ${currentIndex + 1}/${processedImages.length}`);
+                    }}
+                    onError={() => {
+                      const display = currentImageUrl.replace('?url', '');
+                      const msg = `Error loading image at path: ${display}`;
+                      setError(msg);
+                      setIsLoading(false);
+                      log(msg);
+                    }}
+                  />
                 ) : (
                   <div className="text-red-500 text-base text-center p-4">Error loading image. Try refreshing the page.</div>
                 )}
