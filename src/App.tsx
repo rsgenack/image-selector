@@ -20,7 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomeScreen onUpload={handleUpload} />} />
         <Route path="/sort" element={
-          <ImageSorter 
+          <ImageSorter
             images={[]}
             uploadedFiles={uploadedFiles}
             loading={loading}
