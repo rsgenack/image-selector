@@ -30,6 +30,8 @@ npm run sort-images
 
 This will automatically open your browser to http://localhost:3000
 
+Optional: copy `.env.example` to `.env` if you want a local env file. The only documented setting is `VITE_ALLOW_PARENT_DIR=true`. The app and production build do not read this variable; Vite already serves files from the parent directory via `server.fs.allow: ['..']` in `vite.config.ts`.
+
 ## Other Available Commands
 
 ```bash
